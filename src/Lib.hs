@@ -1,18 +1,28 @@
 module Lib
     ( groupSize
+    , groupNames
     , objFnGroup
     , objFnAll
+    , diversifyCourse
     ) where
 
 import Types
-    ( Group(..)
+    ( GroupName
     , User(..)
+    , Group(..)
+    , Course
     )
 
 import Data.Maybe (fromJust)
 
 groupSize :: Int
-groupSize = 20
+groupSize = 20 -- TODO command line option as likely to change
+
+groupNames :: [GroupName]
+groupNames = map ((++) "Group ") $ singleLetteredGroups ++ multiLetteredGroups
+    where alphabet = ['A'..'Z']
+          singleLetteredGroups = map (flip (:) []) alphabet
+          multiLetteredGroups  = [[a, b] | a <- alphabet, b <- alphabet]
 
 objFnGroup :: Group -> Int
 objFnGroup (Group _ []) = 0
@@ -31,3 +41,6 @@ objFnGroup (Group _ xs) = sum [fromJust $ d xs' i j | i <- [1..(m-1)], j <- [(i+
 
 objFnAll :: [Group] -> Int
 objFnAll = sum . map objFnGroup
+
+diversifyCourse :: Course -> [Group]
+diversifyCourse = undefined

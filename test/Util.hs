@@ -21,7 +21,7 @@ import Types ( GroupName
     )
 
 import Lib
-    ( groupSize
+    (
     )
 
 import Test.QuickCheck
@@ -31,6 +31,9 @@ import Test.QuickCheck
     , vectorOf
     , Gen
     )
+
+groupSize :: Int
+groupSize = 20
 
 allCountries :: [Country]
 allCountries =

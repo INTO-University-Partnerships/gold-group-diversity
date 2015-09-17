@@ -1,9 +1,9 @@
 module Lib
-    ( groupSize
-    , groupNames
+    ( groupNames
     , objFnGroup
     , objFnAll
     , diversifyCourse
+    , splitCourseIntoGroupsOfSize
     ) where
 
 import Types
@@ -15,14 +15,12 @@ import Types
 
 import Data.Maybe (fromJust)
 
-groupSize :: Int
-groupSize = 20 -- TODO command line option as likely to change
-
 groupNames :: [GroupName]
-groupNames = map ((++) "Group ") $ singleLetteredGroups ++ multiLetteredGroups
+groupNames = map ((++) "Group ") $ single ++ double ++ triple
     where alphabet = ['A'..'Z']
-          singleLetteredGroups = map (flip (:) []) alphabet
-          multiLetteredGroups  = [[a, b] | a <- alphabet, b <- alphabet]
+          single = map (flip (:) []) alphabet
+          double = [[a, b]    | a <- alphabet, b <- alphabet]
+          triple = [[a, b, c] | a <- alphabet, b <- alphabet, c <- alphabet]
 
 objFnGroup :: Group -> Int
 objFnGroup (Group _ []) = 0
@@ -44,3 +42,10 @@ objFnAll = sum . map objFnGroup
 
 diversifyCourse :: Course -> [Group]
 diversifyCourse = undefined
+
+splitCourseIntoGroupsOfSize :: Int -> Course -> [Group]
+splitCourseIntoGroupsOfSize groupSize users = zipWith (\groupName c -> Group groupName c) groupNames $ f users
+    where
+        f :: Course -> [Course]
+        f [] = []
+        f xs = take groupSize xs : f (drop groupSize xs)

@@ -1,6 +1,6 @@
 {-# LANGUAGE TemplateHaskell #-}
 
-module TestLib (testLib, prop_getGroupsExcept) where
+module TestLib (testLib) where
 
 import Types
     ( User(..)

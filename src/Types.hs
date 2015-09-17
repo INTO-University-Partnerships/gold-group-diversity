@@ -7,6 +7,7 @@ module Types
     , User(..)
     , Group(..)
     , Course
+    , Switch
     ) where
 
 type GroupName = String
@@ -17,6 +18,7 @@ data Gender    = Female | Male deriving (Eq, Show)
 data User      = User StudentID Gender Centre Country deriving Show
 data Group     = Group GroupName [User] deriving Show
 type Course    = [User]
+type Switch    = (Int, User, User)
 
 instance Eq User where
     (User id1 _ _ _) == (User id2 _ _ _) = id1 == id2

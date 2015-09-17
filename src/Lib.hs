@@ -16,6 +16,7 @@ import Types
     , User(..)
     , Group(..)
     , Course
+    , Switch
     )
 
 import Control.Monad (guard)
@@ -51,12 +52,14 @@ diversifyCourse = undefined
 
 -- Find the element (i.e. User) in any group for which a switch of group assignments between
 -- elements and results in the largest increase in the objective function value
-getSwitch :: User -> [Group] -> Maybe User
+getSwitch :: User -> [Group] -> Maybe Switch
 getSwitch _ [] = Nothing
 getSwitch u gs = do
-    userGroup   <- getUserGroup u gs
-    _           <- mapM (getObjFnValueAfterSwitch gs u) $ concatMap (\(Group _ xs) -> xs) $ getGroupsExcept userGroup gs
-    return u -- TODO
+    let currentObjFnValue = objFnAll gs
+    ug <- getUserGroup u gs
+    xs <- mapM (getObjFnValueAfterSwitch gs u) $ concatMap (\(Group _ xs) -> xs) $ getGroupsExcept ug gs
+    let xs' = filter (\(n, _, _) -> n - currentObjFnValue > 0) xs
+    safeHead xs'
 
 splitCourseIntoGroupsOfSize :: Int -> Course -> [Group]
 splitCourseIntoGroupsOfSize groupSize course = zipWith (\groupName c -> Group groupName c) groupNames $ f course
@@ -77,7 +80,7 @@ getGroupsExcept :: Group -> [Group] -> [Group]
 getGroupsExcept _ [] = []
 getGroupsExcept g gs = filter ((/=) g) gs
 
-getObjFnValueAfterSwitch :: [Group] -> User -> User -> Maybe (Int, User, User)
+getObjFnValueAfterSwitch :: [Group] -> User -> User -> Maybe Switch
 getObjFnValueAfterSwitch [] _ _ = Nothing
 getObjFnValueAfterSwitch gs i j = do
     gi <- getUserGroup i gs
@@ -93,3 +96,7 @@ swapElementsBetweenGroups :: (User, Group) -> (User, Group) -> (Group, Group)
 swapElementsBetweenGroups (i, Group ni gi) (j, Group nj gj) = (Group ni $ j : gi', Group nj $ i : gj')
     where gi' = filter ((/=) i) gi
           gj' = filter ((/=) j) gj
+
+safeHead :: [a] -> Maybe a
+safeHead []    = Nothing
+safeHead (x:_) = Just x

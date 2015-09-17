@@ -9,6 +9,7 @@ module Lib
     , getGroupsExcept
     , getObjFnValueAfterSwitch
     , swapElementsBetweenGroups
+    , safeHead
     ) where
 
 import Types
@@ -20,6 +21,7 @@ import Types
     )
 
 import Control.Monad (guard)
+import Data.List (sortBy)
 import Data.Maybe (fromJust)
 
 groupNames :: [GroupName]
@@ -50,16 +52,17 @@ objFnAll = sum . map objFnGroup
 diversifyCourse :: Course -> [Group]
 diversifyCourse = undefined
 
--- Find the element (i.e. User) in any group for which a switch of group assignments between
--- elements and results in the largest increase in the objective function value
+-- (Try to) find a User in any Group (except that User's Group) for which a switch of Group assignments
+-- between the two Users results in the largest increase in the objective function value (i.e. of objFnAll)
 getSwitch :: User -> [Group] -> Maybe Switch
 getSwitch _ [] = Nothing
 getSwitch u gs = do
     let currentObjFnValue = objFnAll gs
     ug <- getUserGroup u gs
     xs <- mapM (getObjFnValueAfterSwitch gs u) $ concatMap (\(Group _ xs) -> xs) $ getGroupsExcept ug gs
-    let xs' = filter (\(n, _, _) -> n - currentObjFnValue > 0) xs
-    safeHead xs'
+    let xs'  = filter (\(n, _, _) -> n - currentObjFnValue > 0) xs
+    let xs'' = sortBy (\(n1, _, _) (n2, _, _) -> compare n2 n1) xs'
+    safeHead xs''
 
 splitCourseIntoGroupsOfSize :: Int -> Course -> [Group]
 splitCourseIntoGroupsOfSize groupSize course = zipWith (\groupName c -> Group groupName c) groupNames $ f course

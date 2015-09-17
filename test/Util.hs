@@ -10,7 +10,8 @@ module Util
     , GroupListWrapper(..)
     ) where
 
-import Types ( GroupName
+import Types
+    ( GroupName
     , StudentID
     , Centre
     , Country
@@ -21,7 +22,7 @@ import Types ( GroupName
     )
 
 import Lib
-    (
+    ( groupNames
     )
 
 import Test.QuickCheck
@@ -65,7 +66,7 @@ newtype GroupListWrapper = GroupListWrapper { unwrapGroupList :: [Group]   } der
 
 instance Arbitrary GroupNameWrapper where
     arbitrary = do
-        names <- elements $ map (\c -> "Group " ++ [c]) ['A'..'Z']
+        names <- elements groupNames
         return $ GroupNameWrapper names
 
 instance Arbitrary StudentIDWrapper where

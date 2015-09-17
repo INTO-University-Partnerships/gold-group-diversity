@@ -1,6 +1,6 @@
 {-# LANGUAGE TemplateHaskell #-}
 
-module TestLib (testLib, prop_splitCourseIntoGroupsOfSizeHasSameUsers) where
+module TestLib (testLib, prop_getGroupsExcept) where
 
 import Types
     ( User(..)
@@ -20,6 +20,10 @@ import Lib
     , objFnGroup
     , objFnAll
     , splitCourseIntoGroupsOfSize
+    , getUserGroup
+    , getGroupsExcept
+    , getObjFnValueAfterSwitch
+    , swapElementsBetweenGroups
     )
 
 import Data.List (nub, sort)
@@ -47,7 +51,7 @@ prop_objFnGroupHasNonNegativeResult :: GroupWrapper -> Bool
 prop_objFnGroupHasNonNegativeResult gw = objFnGroup (unwrapGroup gw) >= 0
 
 prop_objFnAllSumsOverGroup :: GroupListWrapper -> Bool
-prop_objFnAllSumsOverGroup (GroupListWrapper xs) = objFnAll xs == sum (map objFnGroup xs)
+prop_objFnAllSumsOverGroup (GroupListWrapper gs) = objFnAll gs == sum (map objFnGroup gs)
 
 prop_splitCourseIntoGroupsOfSizeGeneratesGroupNames :: CourseWrapper -> Positive Int -> Property
 prop_splitCourseIntoGroupsOfSizeGeneratesGroupNames (CourseWrapper xs) (Positive groupSize) =
@@ -74,6 +78,49 @@ prop_splitCourseIntoGroupsOfSizeHasSameUsers (CourseWrapper xs) (Positive groupS
     constraints ==> sort xs == sort (concatMap (\(Group _ xs') -> xs') groups)
     where constraints = groupSize <= length xs && groupSize <= maxGroupSize
           groups      = splitCourseIntoGroupsOfSize groupSize xs
+
+prop_getUserGroupSuccess :: GroupListWrapper -> Bool
+prop_getUserGroupSuccess (GroupListWrapper gs) =
+    case getUserGroup user gs of
+        Just g' -> g' == g
+        Nothing -> False
+    where g@(Group _ xs) = head gs
+          user           = head xs
+
+prop_getUserGroupFail :: GroupListWrapper -> UserWrapper -> Property
+prop_getUserGroupFail (GroupListWrapper gs) (UserWrapper user) =
+    constraints ==> getUserGroup user gs == Nothing
+    where constraints = and $ map (\(Group _ gs') -> user `notElem` gs') gs
+
+prop_getGroupsExcept :: GroupListWrapper -> Bool
+prop_getGroupsExcept (GroupListWrapper gs) = getGroupsExcept (head gs') gs' == tail gs'
+    where gs' = nub gs
+
+prop_getObjFnValueAfterSwitchReturnsNothingIfInSameGroup :: GroupListWrapper -> Property
+prop_getObjFnValueAfterSwitchReturnsNothingIfInSameGroup (GroupListWrapper gs) =
+    constraints ==> getObjFnValueAfterSwitch gs u1 u2 == Nothing
+    where constraints  = length xs > 1
+          (Group _ xs) = head gs
+          u1           = head xs
+          u2           = head $ drop 1 xs
+
+prop_getObjFnValueAfterSwitchReturnsUsersInTriple :: GroupListWrapper -> Bool
+prop_getObjFnValueAfterSwitchReturnsUsersInTriple (GroupListWrapper gs) =
+    case getObjFnValueAfterSwitch gs u1 u2 of
+        Just (_, u1', u2') -> u1' == u1 && u2' == u2
+        Nothing            -> False
+    where (Group _ xs) = head gs
+          (Group _ ys) = head $ drop 1 gs
+          u1           = head xs
+          u2           = head ys
+
+prop_swapElementsBetweenGroups :: GroupWrapper -> GroupWrapper -> Property
+prop_swapElementsBetweenGroups (GroupWrapper g1@(Group _ xs)) (GroupWrapper g2@(Group _ ys)) =
+    constraints ==> u1 `notElem` xs' && u1 `elem` ys' && u2 `notElem` ys' && u2 `elem` xs'
+    where constraints = g1 /= g2 && u1 /= u2
+          u1 = head xs
+          u2 = head ys
+          (Group _ xs', Group _ ys') = swapElementsBetweenGroups (u1, g1) (u2, g2)
 
 return []
 

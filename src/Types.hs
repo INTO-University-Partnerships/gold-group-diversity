@@ -23,3 +23,9 @@ instance Eq User where
 
 instance Ord User where
     compare (User id1 _ _ _) (User id2 _ _ _) = compare id1 id2
+
+instance Eq Group where
+    (Group name1 _) == (Group name2 _) = name1 == name2
+
+instance Ord Group where
+    compare (Group name1 _) (Group name2 _) = compare name1 name2

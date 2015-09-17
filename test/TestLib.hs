@@ -22,7 +22,7 @@ import Lib
     , splitCourseIntoGroupsOfSize
     , getUserGroup
     , getGroupsExcept
-    , getObjFnValueAfterSwitch
+    , getObjFnDelta
     , swapElementsBetweenGroups
     )
 
@@ -96,21 +96,21 @@ prop_getGroupsExcept :: GroupListWrapper -> Bool
 prop_getGroupsExcept (GroupListWrapper gs) = getGroupsExcept (head gs') gs' == tail gs'
     where gs' = nub gs
 
-prop_getObjFnValueAfterSwitchReturnsNothingIfInSameGroup :: GroupListWrapper -> Property
-prop_getObjFnValueAfterSwitchReturnsNothingIfInSameGroup (GroupListWrapper gs) =
-    constraints ==> getObjFnValueAfterSwitch gs u1 u2 == Nothing
+prop_getObjFnDeltaReturnsNothingIfInSameGroup :: GroupListWrapper -> Property
+prop_getObjFnDeltaReturnsNothingIfInSameGroup (GroupListWrapper gs) =
+    constraints ==> getObjFnDelta gs u1 u2 == Nothing
     where constraints  = length xs > 1
           (Group _ xs) = head gs
           u1           = head xs
           u2           = head $ drop 1 xs
 
-prop_getObjFnValueAfterSwitchReturnsUsersInTriple :: GroupListWrapper -> Bool
-prop_getObjFnValueAfterSwitchReturnsUsersInTriple (GroupListWrapper gs) =
-    case getObjFnValueAfterSwitch gs u1 u2 of
+prop_getObjFnDeltaReturnsUsersInTriple :: GroupListWrapper -> Bool
+prop_getObjFnDeltaReturnsUsersInTriple (GroupListWrapper gs) =
+    case getObjFnDelta gs u1 u2 of
         Just (_, u1', u2') -> u1' == u1 && u2' == u2
         Nothing            -> False
     where (Group _ xs) = head gs
-          (Group _ ys) = head $ drop 1 gs
+          (Group _ ys) = head $ tail gs
           u1           = head xs
           u2           = head ys
 

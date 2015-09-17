@@ -7,7 +7,7 @@ module Lib
     , splitCourseIntoGroupsOfSize
     , getUserGroup
     , getGroupsExcept
-    , getObjFnValueAfterSwitch
+    , getObjFnDelta
     , swapElementsBetweenGroups
     , safeHead
     ) where
@@ -52,16 +52,15 @@ objFnAll = sum . map objFnGroup
 diversifyCourse :: Course -> [Group]
 diversifyCourse = undefined
 
--- (Try to) find a User in any Group (except that User's Group) for which a switch of Group assignments
--- between the two Users results in the largest increase in the objective function value (i.e. of objFnAll)
+-- Find a User in any Group (except the given User's Group) for which a switch of Group assignments
+-- between the given User and the User found results in the largest increase in the objective function value.
 getSwitch :: User -> [Group] -> Maybe Switch
 getSwitch _ [] = Nothing
 getSwitch u gs = do
-    let currentObjFnValue = objFnAll gs
     ug <- getUserGroup u gs
-    xs <- mapM (getObjFnValueAfterSwitch gs u) $ concatMap (\(Group _ xs) -> xs) $ getGroupsExcept ug gs
-    let xs'  = filter (\(n, _, _) -> n - currentObjFnValue > 0) xs
-    let xs'' = sortBy (\(n1, _, _) (n2, _, _) -> compare n2 n1) xs'
+    xs <- mapM (getObjFnDelta gs u) $ concatMap (\(Group _ xs) -> xs) $ getGroupsExcept ug gs
+    let xs'  = filter (\(d, _, _) -> d > 0) xs
+    let xs'' = sortBy (\(d1, _, _) (d2, _, _) -> compare d2 d1) xs'
     safeHead xs''
 
 splitCourseIntoGroupsOfSize :: Int -> Course -> [Group]
@@ -83,17 +82,16 @@ getGroupsExcept :: Group -> [Group] -> [Group]
 getGroupsExcept _ [] = []
 getGroupsExcept g gs = filter ((/=) g) gs
 
-getObjFnValueAfterSwitch :: [Group] -> User -> User -> Maybe Switch
-getObjFnValueAfterSwitch [] _ _ = Nothing
-getObjFnValueAfterSwitch gs i j = do
+getObjFnDelta :: [Group] -> User -> User -> Maybe Switch
+getObjFnDelta [] _ _ = Nothing
+getObjFnDelta gs i j = do
     gi <- getUserGroup i gs
     gj <- getUserGroup j gs
-    guard (gi /= gj)
-    let gs'        = getGroupsExcept gi gs
-    let gs''       = getGroupsExcept gj gs'
+    guard $ gi /= gj
     let (gi', gj') = swapElementsBetweenGroups (i, gi) (j, gj)
-    let objFnValue = objFnAll $ gs'' ++ [gi', gj']
-    return $ (,,) objFnValue i j
+    let old = objFnGroup gi  + objFnGroup gj
+    let new = objFnGroup gi' + objFnGroup gj'
+    return (new - old, i, j)
 
 swapElementsBetweenGroups :: (User, Group) -> (User, Group) -> (Group, Group)
 swapElementsBetweenGroups (i, Group ni gi) (j, Group nj gj) = (Group ni $ j : gi', Group nj $ i : gj')

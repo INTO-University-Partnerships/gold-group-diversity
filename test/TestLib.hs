@@ -3,55 +3,115 @@
 module TestLib (testLib) where
 
 import Types
-    ( User(..)
+    ( Gender(..)
+    , User(..)
     , Group(..)
+    , Course
     )
 
 import Util
     ( GroupNameWrapper(..)
     , UserWrapper(..)
     , GroupWrapper(..)
+    , HomoGroupWrapper(..)
     , CourseWrapper(..)
     , GroupListWrapper(..)
     )
 
 import Lib
-    ( groupNames
-    , objFnGroup
-    , objFnAll
+    ( diversifyCourse
+    , groupNames
+    , objectiveFunction
+    , anySwitches
+    , switchOneUser
+    , makeSwitch
     , splitCourseIntoGroupsOfSize
     , getUserGroup
     , getGroupsExcept
-    , getObjFnDelta
-    , swapElementsBetweenGroups
+    , objectiveFunctionDelta
+    , swapUsers
+    , swapUsersBetweenGroups
     )
 
 import Data.List (nub, sort)
-import Test.QuickCheck (Positive(..), Property, (==>))
+import Test.QuickCheck (Positive(..), Property, (==>), once)
 import Test.QuickCheck.All (quickCheckAll)
 
 maxGroupSize :: Int
 maxGroupSize = 100
 
-prop_objFnGroupHasResultOfZeroForSingletonGroup :: GroupNameWrapper -> UserWrapper -> Bool
-prop_objFnGroupHasResultOfZeroForSingletonGroup gnw uw = objFnGroup g == 0
+homogeneousUsers :: (Course, Course)
+homogeneousUsers = (concat xs, map head xs) where
+    xs =
+        [ map (\i -> User (show i) Female "NCL" "GB") ([1..8]   :: [Int])
+        , map (\i -> User (show i) Female "NCL" "FR") ([9..16]  :: [Int])
+        , map (\i -> User (show i) Female "CIT" "GB") ([17..24] :: [Int])
+        , map (\i -> User (show i) Female "CIT" "FR") ([25..32] :: [Int])
+        , map (\i -> User (show i) Male   "NCL" "GB") ([33..40] :: [Int])
+        , map (\i -> User (show i) Male   "NCL" "FR") ([41..48] :: [Int])
+        , map (\i -> User (show i) Male   "CIT" "GB") ([49..56] :: [Int])
+        , map (\i -> User (show i) Male   "CIT" "FR") ([57..64] :: [Int])
+        ]
+
+prop_diversifyCourse :: Property
+prop_diversifyCourse = once $
+    map objectiveFunction diversifiedGroups == replicate (length diversifiedGroups) (objectiveFunction $ Group "A" $ snd homogeneousUsers)
+    where diversifiedGroups = diversifyCourse (length $ snd homogeneousUsers) (fst homogeneousUsers)
+
+prop_objectiveFunctionHasResultOfZeroForSingletonGroup :: GroupNameWrapper -> UserWrapper -> Bool
+prop_objectiveFunctionHasResultOfZeroForSingletonGroup gnw uw = objectiveFunction g == 0
     where g = Group (unwrapGroupName gnw) [unwrapUser uw]
 
-prop_objFnGroupHasResultOfZeroForHomogeneousGroup :: Positive Int -> GroupNameWrapper -> UserWrapper -> Bool
-prop_objFnGroupHasResultOfZeroForHomogeneousGroup n gnw (UserWrapper u) = objFnGroup g == 0
+prop_objectiveFunctionHasResultOfZeroForHomogeneousGroup :: Positive Int -> GroupNameWrapper -> UserWrapper -> Bool
+prop_objectiveFunctionHasResultOfZeroForHomogeneousGroup n gnw (UserWrapper u) = objectiveFunction g == 0
     where g = Group (unwrapGroupName gnw) $ replicate (getPositive n) u
 
-prop_objFnGroupHasResultOf3ForMaximallyDiverseUsers :: GroupNameWrapper -> UserWrapper -> UserWrapper -> Property
-prop_objFnGroupHasResultOf3ForMaximallyDiverseUsers gnw (UserWrapper u1@(User _ g1 ce1 co1)) (UserWrapper u2@(User _ g2 ce2 co2)) =
-    constraints ==> objFnGroup group == 3
-    where constraints = u1 /= u2 && g1 /= g2 && ce1 /= ce2 && co1 /= co2
+prop_objectiveFunctionHasResultOf3ForMaximallyDiverseUsers :: GroupNameWrapper -> UserWrapper -> UserWrapper -> Property
+prop_objectiveFunctionHasResultOf3ForMaximallyDiverseUsers gnw (UserWrapper u1@(User _ g1 ce1 co1)) (UserWrapper u2@(User _ g2 ce2 co2)) =
+    constraints ==> objectiveFunction group == 3
+    where constraints = and [u1 /= u2, g1 /= g2, ce1 /= ce2, co1 /= co2]
           group       = Group (unwrapGroupName gnw) [u1, u2]
 
-prop_objFnGroupHasNonNegativeResult :: GroupWrapper -> Bool
-prop_objFnGroupHasNonNegativeResult gw = objFnGroup (unwrapGroup gw) >= 0
+prop_objectiveFunctionHasNonNegativeResult :: GroupWrapper -> Bool
+prop_objectiveFunctionHasNonNegativeResult gw = objectiveFunction (unwrapGroup gw) >= 0
 
-prop_objFnAllSumsOverGroup :: GroupListWrapper -> Bool
-prop_objFnAllSumsOverGroup (GroupListWrapper gs) = objFnAll gs == sum (map objFnGroup gs)
+prop_anySwitches :: HomoGroupWrapper -> HomoGroupWrapper -> Property
+prop_anySwitches (HomoGroupWrapper g1@(Group _ xs)) (HomoGroupWrapper g2@(Group _ ys)) =
+    constraints ==> case anySwitches [g1, g2] of
+        (True,  gs) -> (sum . map objectiveFunction) gs > 0
+        (False, _)  -> False
+    where constraints          = g1 /= g2 && or [ge1 /= ge2, ce1 /= ce2, co1 /= co2]
+          (User _ ge1 ce1 co1) = head xs
+          (User _ ge2 ce2 co2) = head ys
+
+prop_switchOneUser :: HomoGroupWrapper -> HomoGroupWrapper -> Property
+prop_switchOneUser (HomoGroupWrapper g1@(Group _ xs)) (HomoGroupWrapper g2@(Group _ ys)) =
+    constraints ==> case switchOneUser [g1, g2] u1 of
+        (True,  gs) -> (sum . map objectiveFunction) gs > 0
+        (False, _)  -> False
+    where constraints             = g1 /= g2 && or [ge1 /= ge2, ce1 /= ce2, co1 /= co2]
+          u1@(User _ ge1 ce1 co1) = head xs
+          (User    _ ge2 ce2 co2) = head ys
+
+prop_makeSwitch :: GroupListWrapper -> Bool
+prop_makeSwitch (GroupListWrapper gs) =
+    case makeSwitch gs'  u1 u2 of
+        (g1'@(Group _ xs'):g2'@(Group _ ys'):rest') -> and
+            [ g1' == g1
+            , g2' == g2
+            , u1 `notElem` xs'
+            , u1 `elem` ys'
+            , u2 `notElem` ys'
+            , u2 `elem` xs'
+            , rest' == rest
+            ]
+        _ -> False
+    where gs'             = nub gs
+          g1@(Group _ xs) = head gs'
+          g2@(Group _ ys) = head $ tail gs'
+          u1              = head xs
+          u2              = head ys
+          rest            = getGroupsExcept g1 (getGroupsExcept g2 gs')
 
 prop_splitCourseIntoGroupsOfSizeGeneratesGroupNames :: CourseWrapper -> Positive Int -> Property
 prop_splitCourseIntoGroupsOfSizeGeneratesGroupNames (CourseWrapper xs) (Positive groupSize) =
@@ -70,7 +130,7 @@ prop_splitCourseIntoGroupsOfSizeHasFixedSizedGroups (CourseWrapper xs) (Positive
 prop_splitCourseIntoGroupsOfSizeHasLeftOverGroup :: CourseWrapper -> Positive Int -> Property
 prop_splitCourseIntoGroupsOfSizeHasLeftOverGroup (CourseWrapper xs) (Positive groupSize) =
     constraints ==> length xs' > 0 && length xs' <= groupSize && length xs' == (length xs `mod` groupSize)
-    where constraints   = groupSize <= length xs && groupSize <= maxGroupSize && (length xs `mod` groupSize > 0)
+    where constraints   = and [groupSize <= length xs, groupSize <= maxGroupSize, length xs `mod` groupSize > 0]
           (Group _ xs') = last $ splitCourseIntoGroupsOfSize groupSize xs
 
 prop_splitCourseIntoGroupsOfSizeHasSameUsers :: CourseWrapper -> Positive Int -> Property
@@ -81,7 +141,7 @@ prop_splitCourseIntoGroupsOfSizeHasSameUsers (CourseWrapper xs) (Positive groupS
 
 prop_getUserGroupSuccess :: GroupListWrapper -> Bool
 prop_getUserGroupSuccess (GroupListWrapper gs) =
-    case getUserGroup user gs of
+    case getUserGroup gs user of
         Just g' -> g' == g
         Nothing -> False
     where g@(Group _ xs) = head gs
@@ -89,38 +149,76 @@ prop_getUserGroupSuccess (GroupListWrapper gs) =
 
 prop_getUserGroupFail :: GroupListWrapper -> UserWrapper -> Property
 prop_getUserGroupFail (GroupListWrapper gs) (UserWrapper user) =
-    constraints ==> getUserGroup user gs == Nothing
+    constraints ==> getUserGroup gs user == Nothing
     where constraints = and $ map (\(Group _ gs') -> user `notElem` gs') gs
 
 prop_getGroupsExcept :: GroupListWrapper -> Bool
 prop_getGroupsExcept (GroupListWrapper gs) = getGroupsExcept (head gs') gs' == tail gs'
     where gs' = nub gs
 
-prop_getObjFnDeltaReturnsNothingIfInSameGroup :: GroupListWrapper -> Property
-prop_getObjFnDeltaReturnsNothingIfInSameGroup (GroupListWrapper gs) =
-    constraints ==> getObjFnDelta gs u1 u2 == Nothing
+prop_objectiveFunctionDeltaReturnsNothingIfInSameGroup :: GroupListWrapper -> Property
+prop_objectiveFunctionDeltaReturnsNothingIfInSameGroup (GroupListWrapper gs) =
+    constraints ==> objectiveFunctionDelta gs u1 u2 == Nothing
     where constraints  = length xs > 1
           (Group _ xs) = head gs
           u1           = head xs
           u2           = head $ drop 1 xs
 
-prop_getObjFnDeltaReturnsUsersInTriple :: GroupListWrapper -> Bool
-prop_getObjFnDeltaReturnsUsersInTriple (GroupListWrapper gs) =
-    case getObjFnDelta gs u1 u2 of
+prop_objectiveFunctionDeltaReturnsUsersInTriple :: GroupListWrapper -> Bool
+prop_objectiveFunctionDeltaReturnsUsersInTriple (GroupListWrapper gs) =
+    case objectiveFunctionDelta gs u1 u2 of
         Just (_, u1', u2') -> u1' == u1 && u2' == u2
         Nothing            -> False
-    where (Group _ xs) = head gs
-          (Group _ ys) = head $ tail gs
+    where gs'          = nub gs
+          (Group _ xs) = head gs'
+          (Group _ ys) = head $ tail gs'
           u1           = head xs
           u2           = head ys
 
-prop_swapElementsBetweenGroups :: GroupWrapper -> GroupWrapper -> Property
-prop_swapElementsBetweenGroups (GroupWrapper g1@(Group _ xs)) (GroupWrapper g2@(Group _ ys)) =
-    constraints ==> u1 `notElem` xs' && u1 `elem` ys' && u2 `notElem` ys' && u2 `elem` xs'
+prop_swapUsers :: GroupListWrapper -> Property
+prop_swapUsers (GroupListWrapper gs) =
+    constraints ==> case swapUsers gs' u1 u2 of
+        Just (gi, gi'@(Group _ xs'), gj, gj'@(Group _ ys')) -> and
+            [ gi  == g1
+            , gi' == g1
+            , gj  == g2
+            , gj' == g2
+            , u1 `notElem` xs'
+            , u1 `elem` ys'
+            , u2 `notElem` ys'
+            , u2 `elem` xs'
+            ]
+        Nothing -> False
+    where constraints     = g1 /= g2 && u1 /= u2
+          gs'             = nub gs
+          g1@(Group _ xs) = head gs'
+          g2@(Group _ ys) = head $ tail gs'
+          u1              = head xs
+          u2              = head ys
+
+prop_swapUsersInSameGroup :: GroupListWrapper -> Property
+prop_swapUsersInSameGroup (GroupListWrapper gs) =
+    constraints ==> case swapUsers gs' u1 u2 of
+        Just _  -> False
+        Nothing -> True
+    where constraints  = u1 /= u2
+          gs'          = nub gs
+          (Group _ xs) = head gs'
+          u1           = head xs
+          u2           = head $ tail xs
+
+prop_swapUsersBetweenGroups :: GroupWrapper -> GroupWrapper -> Property
+prop_swapUsersBetweenGroups (GroupWrapper g1@(Group _ xs)) (GroupWrapper g2@(Group _ ys)) =
+    constraints ==> and
+        [ u1 `notElem` xs'
+        , u1 `elem` ys'
+        , u2 `notElem` ys'
+        , u2 `elem` xs'
+        ]
     where constraints = g1 /= g2 && u1 /= u2
           u1 = head xs
           u2 = head ys
-          (Group _ xs', Group _ ys') = swapElementsBetweenGroups (u1, g1) (u2, g2)
+          (Group _ xs', Group _ ys') = swapUsersBetweenGroups (u1, g1) (u2, g2)
 
 return []
 

@@ -7,7 +7,13 @@ library
   hs-source-dirs:       src
   exposed-modules:      Types
                       , Lib
+                      , Parse
+                      , IOActions
   build-depends:        base
+                      , bytestring
+                      , text
+                      , vector
+                      , cassava
   default-language:     Haskell2010
 
 executable diversify
@@ -15,6 +21,7 @@ executable diversify
   hs-source-dirs:       app
   build-depends:        base
                       , gold-group-diversity
+                      , optparse-applicative
   default-language:     Haskell2010
 
 test-suite diversify-test

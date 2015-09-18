@@ -11,6 +11,7 @@ module Lib
     , objectiveFunctionDelta
     , swapUsers
     , swapUsersBetweenGroups
+    , groupsToUsers
     ) where
 
 import Types
@@ -30,9 +31,11 @@ diversifyCourse groupSize course = f gs'
     where
         f xs = case anySwitches xs of
             (True,  xs') -> f xs'
-            (False, xs') -> sort xs'
-        gs  = splitCourseIntoGroupsOfSize groupSize course
-        gs' = if getGroupSize (last gs) /= getGroupSize (head gs) then init gs else gs
+            (False, xs') -> sort xs' ++ last'
+        gs       = splitCourseIntoGroupsOfSize groupSize course
+        leftOver = getGroupSize (last gs) /= getGroupSize (head gs)
+        gs'      = if leftOver then init gs else gs
+        last'    = if leftOver then [last gs] else []
 
 groupNames :: [GroupName]
 groupNames = map ((++) "Group ") $ single ++ double ++ triple
@@ -137,12 +140,12 @@ swapUsersBetweenGroups (i, Group ni gi) (j, Group nj gj) = (Group ni $ j : gi', 
     where gi' = filter ((/=) i) gi
           gj' = filter ((/=) j) gj
 
+groupsToUsers :: [Group] -> [User]
+groupsToUsers = concatMap (\(Group _ xs) -> xs)
+
 safeHead :: [a] -> Maybe a
 safeHead []    = Nothing
 safeHead (x:_) = Just x
-
-groupsToUsers :: [Group] -> [User]
-groupsToUsers = concatMap (\(Group _ xs) -> xs)
 
 getGroupSize :: Group -> Int
 getGroupSize (Group _ xs) = length xs

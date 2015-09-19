@@ -29,6 +29,7 @@ import Data.Maybe (fromJust)
 diversifyCourse :: Int -> Course -> [Group]
 diversifyCourse groupSize course = f gs'
     where
+        f :: [Group] -> [Group]
         f xs = case anySwitches xs of
             (True,  xs') -> f xs'
             (False, xs') -> sort xs' ++ last'

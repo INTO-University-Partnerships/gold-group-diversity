@@ -1,6 +1,6 @@
 # GOLD group diversity
 
-A command line programme to diversify groups of students.
+A command line programme to maximize the diversity (in terms of gender, INTO centre and country of origin) of groups of students within a course.
 
 ## Technology
 
@@ -9,6 +9,8 @@ A command line programme to diversify groups of students.
 * [In-depth guide](https://github.com/commercialhaskell/stack/blob/master/GUIDE.md) to Stack
 
 ## Theory
+
+### Algorithm
 
 The algorithm used to solve the so-called *"maximally diverse grouping problem"* (MDGP) is the *"LCW"* algorithm presented in [this paper](http://www.uv.es/rmarti/paper/docs/mdp7.pdf) on page 5. In pseudo-code, this reads:
 
@@ -22,10 +24,15 @@ do {
 } while at least one switch is made.
 ```
 
-The *do-while* block is implemented by functions `diversifyCourse` and `anySwitches` in `src/Lib.hs`.
-Steps *1* and *2* are together represented by function `switchOneUser` in `src/Lib.hs`.
+The *do-while* block is implemented by the functions [diversifyCourse](https://github.com/INTO-University-Partnerships/gold-group-diversity/blob/master/src/Lib.hs#L29) and [anySwitches](https://github.com/INTO-University-Partnerships/gold-group-diversity/blob/master/src/Lib.hs#L62).
 
-The *"objective function"* is explained earlier in the paper on page 3. However, calculating the objective function for the *entire* set of groups *G* is not necessary. Rather, it is only necessary to consider deltas in the objective function value between two groups when evaluating whether to make a switch.
+Steps *1.* and *2.* are together implemented by the function [switchUserPair](https://github.com/INTO-University-Partnerships/gold-group-diversity/blob/master/src/Lib.hs#L76).
+
+### Quantifying diversity
+
+Diversity is quantified by the so-called *"objective function"* explained in the paper on pages 2 and 3. However, calculating the objective function for the *entire* set of groups *G* is not necessary. Rather, it is only necessary to consider deltas in the objective function value between two groups when evaluating whether to make a switch. Calculating objective function deltas is implemented by the function [objectiveFunctionDelta](https://github.com/INTO-University-Partnerships/gold-group-diversity/blob/master/src/Lib.hs#L122).
+
+The *"objective function"*  is, appropriately enough, implemented by the function [objectiveFunction](https://github.com/INTO-University-Partnerships/gold-group-diversity/blob/master/src/Lib.hs#L47) (although the implementation is for one particular group, not all *G* groups). The implementation of the *"objective function"* does not take the square root of the sum of the differences between each pair of users. Instead, it simply sums the number of attributes that differ between pairs. As there are three attributes (gender, INTO centre and country of origin) the possible difference values between a pair of users is `[0, 1, 2, 3]`.
 
 ## Build
 

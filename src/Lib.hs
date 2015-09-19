@@ -3,7 +3,7 @@ module Lib
     , groupNames
     , objectiveFunction
     , anySwitches
-    , switchOneUser
+    , switchUserPair
     , makeSwitch
     , splitCourseIntoGroupsOfSize
     , getUserGroup
@@ -66,16 +66,16 @@ anySwitches gs = f (groupsToUsers gs) (False, gs)
         f :: [User] -> (Bool, [Group]) -> (Bool, [Group])
         f [] p = p
         f (x:xs) (b, gs') =
-            case switchOneUser gs' x of
+            case switchUserPair gs' x of
                 (True,  gs'') -> f xs (True, gs'')
                 (False, _)    -> f xs (b,    gs')
 
 -- 1. Find a User j in any Group (except the given User i's Group) for which a switch of Group assignments
 --    between User i and User j results in the largest positive delta in the objective function value.
 -- 2. If there is at least one switch, make the switch.
-switchOneUser :: [Group] -> User -> (Bool, [Group])
-switchOneUser [] _ = (False, [])
-switchOneUser gs i =
+switchUserPair :: [Group] -> User -> (Bool, [Group])
+switchUserPair [] _ = (False, [])
+switchUserPair gs i =
     case f of
         Just (_, _, j) -> (True,  makeSwitch gs i j)
         Nothing        -> (False, gs)

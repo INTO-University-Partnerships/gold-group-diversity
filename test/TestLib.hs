@@ -23,7 +23,7 @@ import Lib
     , groupNames
     , objectiveFunction
     , anySwitches
-    , switchOneUser
+    , switchUserPair
     , makeSwitch
     , splitCourseIntoGroupsOfSize
     , getUserGroup
@@ -84,9 +84,9 @@ prop_anySwitches (HomoGroupWrapper g1@(Group _ xs)) (HomoGroupWrapper g2@(Group 
           (User _ ge1 ce1 co1) = head xs
           (User _ ge2 ce2 co2) = head ys
 
-prop_switchOneUser :: HomoGroupWrapper -> HomoGroupWrapper -> Property
-prop_switchOneUser (HomoGroupWrapper g1@(Group _ xs)) (HomoGroupWrapper g2@(Group _ ys)) =
-    constraints ==> case switchOneUser [g1, g2] u1 of
+prop_switchUserPair :: HomoGroupWrapper -> HomoGroupWrapper -> Property
+prop_switchUserPair (HomoGroupWrapper g1@(Group _ xs)) (HomoGroupWrapper g2@(Group _ ys)) =
+    constraints ==> case switchUserPair [g1, g2] u1 of
         (True,  gs) -> (sum . map objectiveFunction) gs > 0
         (False, _)  -> False
     where constraints             = g1 /= g2 && or [ge1 /= ge2, ce1 /= ce2, co1 /= co2]

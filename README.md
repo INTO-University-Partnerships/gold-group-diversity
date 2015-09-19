@@ -24,9 +24,7 @@ do {
 } while at least one switch is made.
 ```
 
-The *do-while* block is implemented by the functions [diversifyCourse](https://github.com/INTO-University-Partnerships/gold-group-diversity/blob/master/src/Lib.hs#L29) and [anySwitches](https://github.com/INTO-University-Partnerships/gold-group-diversity/blob/master/src/Lib.hs#L62).
-
-Steps *1.* and *2.* are together implemented by the function [switchUserPair](https://github.com/INTO-University-Partnerships/gold-group-diversity/blob/master/src/Lib.hs#L76).
+The *do-while* block is implemented by the functions [diversifyCourse](https://github.com/INTO-University-Partnerships/gold-group-diversity/blob/master/src/Lib.hs#L29) and [anySwitches](https://github.com/INTO-University-Partnerships/gold-group-diversity/blob/master/src/Lib.hs#L62). Steps *1.* and *2.* are together implemented by the function [switchUserPair](https://github.com/INTO-University-Partnerships/gold-group-diversity/blob/master/src/Lib.hs#L76).
 
 ### Quantifying diversity
 

@@ -48,7 +48,11 @@ instance Eq Group where
     (Group name1 _) == (Group name2 _) = name1 == name2
 
 instance Ord Group where
-    compare (Group name1 _) (Group name2 _) = compare name1 name2
+    compare (Group name1 _) (Group name2 _) =
+        case c of
+            EQ -> compare name1 name2
+            _  -> c
+        where c = compare (length name1) (length name2)
 
 instance Eq UserWithGroup where
     (UserWithGroup u1 _) == (UserWithGroup u2 _) = u1 == u2

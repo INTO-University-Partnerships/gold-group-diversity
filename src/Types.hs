@@ -12,6 +12,7 @@ module Types
     , Course
     , Switch
     , DiversifyOpts(..)
+    , diversify
     ) where
 
 import Control.Monad (mzero)
@@ -25,18 +26,28 @@ import qualified Data.Vector as V
 enc :: String -> BI.ByteString
 enc = encodeUtf8 . T.pack
 
-type GroupName = String
-type StudentID = String
-type Centre    = String
-type Country   = String
-data Gender    = Female | Male deriving (Eq, Ord, Show)
-data User      = User StudentID Gender Centre Country deriving Show
-data Group     = Group GroupName [User] deriving Show
-type Course    = [User]
-type Switch    = (Int, User, User)
+type GroupName  = String
+type StudentID  = String
+type Centre     = String
+type Country    = String
+data Gender     = Female | Male deriving (Eq, Ord, Show)
+data User       = User StudentID Gender Centre Country deriving Show
+data Group      = Group GroupName [User] deriving Show
+type Course     = [User]
+type ObjFnDelta = Int
+type Switch     = (ObjFnDelta, User, User)
 
 data UserWithGroup = UserWithGroup User Group deriving Show
 data DiversifyOpts = DiversifyOpts Int deriving Show
+
+class Diversify a where
+    diversify :: a -> a -> Int
+
+instance Diversify User where
+    diversify (User _ g1 ce1 co1) (User _ g2 ce2 co2) = s g1 g2 + s ce1 ce2 + s co1 co2
+        where
+            s :: Eq a => a -> a -> Int
+            s x y = if x == y then 0 else 1
 
 instance Eq User where
     (User id1 _ _ _) == (User id2 _ _ _) = id1 == id2

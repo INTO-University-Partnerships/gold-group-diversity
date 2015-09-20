@@ -16,10 +16,11 @@ module Lib
 
 import Types
     ( GroupName
-    , User(..)
+    , User
     , Group(..)
     , Course
     , Switch
+    , diversify
     )
 
 import Control.Monad (guard)
@@ -53,12 +54,9 @@ objectiveFunction (Group _ xs) = sum [fromJust $ d xs' i j | i <- [1..(m-1)], j 
         xs' = zip [1..] xs
         d :: [(Int, User)] -> Int -> Int -> Maybe Int
         d l i j = do
-            User _ g1 ce1 co1 <- lookup i l
-            User _ g2 ce2 co2 <- lookup j l
-            return $ s g1 g2 + s ce1 ce2 + s co1 co2
-            where
-                s :: Eq a => a -> a -> Int
-                s x y = if x == y then 0 else 1
+            u1 <- lookup i l
+            u2 <- lookup j l
+            return $ diversify u1 u2
 
 anySwitches :: [Group] -> (Bool, [Group])
 anySwitches [] = (False, [])

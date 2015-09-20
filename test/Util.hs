@@ -20,7 +20,6 @@ import Types
     , Gender(..)
     , User(..)
     , Group(..)
-    , Course
     )
 
 import Lib
@@ -56,17 +55,19 @@ allCountries =
     , "ZM", "ZW"
     ]
 
-newtype GroupNameWrapper  = GroupNameWrapper  { unwrapGroupName :: GroupName } deriving Show
-newtype StudentIDWrapper  = StudentIDWrapper  { unwrapStudentID :: StudentID } deriving Show
-newtype CentreWrapper     = CentreWrapper     { unwrapCentre    :: Centre    } deriving Show
-newtype CountryWrapper    = CountryWrapper    { unwrapCountry   :: Country   } deriving Show
-newtype GenderWrapper     = GenderWrapper     { unwrapGender    :: Gender    } deriving Show
-newtype UserWrapper       = UserWrapper       { unwrapUser      :: User      } deriving Show
-newtype GroupWrapper      = GroupWrapper      { unwrapGroup     :: Group     } deriving Show
-newtype HomoGroupWrapper  = HomoGroupWrapper  { unwrapHomoGroup :: Group     } deriving Show
-newtype CourseWrapper     = CourseWrapper     { unwrapCourse    :: Course    } deriving Show
-newtype GroupListWrapper  = GroupListWrapper  { unwrapGroupList :: [Group]   } deriving Show
-newtype HomoGrpLstWrapper = HomoGrpLstWrapper { unwrapHmGrpList :: [Group]   } deriving Show
+type Course = [User]
+
+newtype GroupNameWrapper  = GroupNameWrapper  { unwrapGroupName :: GroupName    } deriving Show
+newtype StudentIDWrapper  = StudentIDWrapper  { unwrapStudentID :: StudentID    } deriving Show
+newtype CentreWrapper     = CentreWrapper     { unwrapCentre    :: Centre       } deriving Show
+newtype CountryWrapper    = CountryWrapper    { unwrapCountry   :: Country      } deriving Show
+newtype GenderWrapper     = GenderWrapper     { unwrapGender    :: Gender       } deriving Show
+newtype UserWrapper       = UserWrapper       { unwrapUser      :: User         } deriving Show
+newtype GroupWrapper      = GroupWrapper      { unwrapGroup     :: Group User   } deriving Show
+newtype HomoGroupWrapper  = HomoGroupWrapper  { unwrapHomoGroup :: Group User   } deriving Show
+newtype CourseWrapper     = CourseWrapper     { unwrapCourse    :: Course       } deriving Show
+newtype GroupListWrapper  = GroupListWrapper  { unwrapGroupList :: [Group User] } deriving Show
+newtype HomoGrpLstWrapper = HomoGrpLstWrapper { unwrapHmGrpList :: [Group User] } deriving Show
 
 instance Arbitrary GroupNameWrapper where
     arbitrary = do

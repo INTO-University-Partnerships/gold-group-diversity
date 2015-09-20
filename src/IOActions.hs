@@ -4,7 +4,7 @@ module IOActions
 
 import Types (User, DiversifyOpts(..))
 import Parse (collectCSVUserData, collectCSVUserErrors, toUserWithGroup)
-import Lib (diversifyCourse)
+import Lib (diversifyElements)
 
 import Data.Csv (encodeWith, defaultEncodeOptions, EncodeOptions(..), Quoting(..), HasHeader(..))
 import Data.Text.Encoding (encodeUtf8, decodeUtf8)
@@ -20,7 +20,7 @@ runDiversification (DiversifyOpts groupSize) = do
     case h csvData of
         Left  e -> putStrLn e
         Right v -> do
-            let encoded = encodeWith encodeOpts $ toUserWithGroup $ diversifyCourse groupSize $ V.toList v
+            let encoded = encodeWith encodeOpts $ toUserWithGroup $ diversifyElements groupSize $ V.toList v
             putStrLn $ T.unpack $ decodeUtf8 $ BL.toStrict encoded
             where encodeOpts = defaultEncodeOptions { encQuoting = QuoteAll }
     where

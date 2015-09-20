@@ -9,10 +9,10 @@ module Types
     , User(..)
     , UserWithGroup(..)
     , Group(..)
-    , Course
-    , Switch
+    , Switch(..)
     , DiversifyOpts(..)
-    , diversify
+    , Element
+    , distance
     ) where
 
 import Control.Monad (mzero)
@@ -32,19 +32,18 @@ type Centre     = String
 type Country    = String
 data Gender     = Female | Male deriving (Eq, Ord, Show)
 data User       = User StudentID Gender Centre Country deriving Show
-data Group      = Group GroupName [User] deriving Show
-type Course     = [User]
+data Group a    = Group GroupName [a] deriving Show
 type ObjFnDelta = Int
-type Switch     = (ObjFnDelta, User, User)
+data Switch a   = Switch ObjFnDelta a a
 
-data UserWithGroup = UserWithGroup User Group deriving Show
+data UserWithGroup = UserWithGroup User (Group User) deriving Show
 data DiversifyOpts = DiversifyOpts Int deriving Show
 
-class Diversify a where
-    diversify :: a -> a -> Int
+class Ord a => Element a where
+    distance :: a -> a -> Int
 
-instance Diversify User where
-    diversify (User _ g1 ce1 co1) (User _ g2 ce2 co2) = s g1 g2 + s ce1 ce2 + s co1 co2
+instance Element User where
+    distance (User _ g1 ce1 co1) (User _ g2 ce2 co2) = s g1 g2 + s ce1 ce2 + s co1 co2
         where
             s :: Eq a => a -> a -> Int
             s x y = if x == y then 0 else 1
@@ -55,10 +54,10 @@ instance Eq User where
 instance Ord User where
     compare (User id1 _ _ _) (User id2 _ _ _) = compare id1 id2
 
-instance Eq Group where
+instance Element a => Eq (Group a) where
     (Group name1 _) == (Group name2 _) = name1 == name2
 
-instance Ord Group where
+instance Element a => Ord (Group a) where
     compare (Group name1 _) (Group name2 _) =
         case c of
             EQ -> compare name1 name2

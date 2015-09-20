@@ -5,7 +5,7 @@ module Parse
     ) where
 
 import Types (User, UserWithGroup(..), Group)
-import Lib (groupsToUsers, getUserGroup)
+import Lib (groupsToElements, getElementGroup)
 
 import Data.Csv.Streaming (Records(..))
 import Data.Maybe (fromJust)
@@ -30,6 +30,6 @@ collectCSVUserErrors row v (CS.Cons r moreRecords) =
         Right _ -> collectCSVUserErrors (row + 1) v moreRecords
         Left  e -> collectCSVUserErrors (row + 1) (V.snoc v $ "Row " ++ show row ++ " has error \"" ++ e ++ "\"") moreRecords
 
-toUserWithGroup :: [Group] -> [UserWithGroup]
-toUserWithGroup gs = map (\u -> UserWithGroup u $ fromJust $ getUserGroup gs u) users
-    where users = groupsToUsers gs
+toUserWithGroup :: [Group User] -> [UserWithGroup]
+toUserWithGroup gs = map (\u -> UserWithGroup u $ fromJust $ getElementGroup gs u) users
+    where users = groupsToElements gs

@@ -4,13 +4,13 @@ module Lib
     , objectiveFunction
     , anySwitches
     , switchUserPair
-    , makeSwitch
+    , applySwitch
     , splitCourseIntoGroupsOfSize
     , getUserGroup
     , getGroupsExcept
     , objectiveFunctionDelta
     , swapUsers
-    , swapUsersBetweenGroups
+    , swapUsersHelper
     , groupsToUsers
     ) where
 
@@ -73,13 +73,13 @@ anySwitches gs = f (groupsToUsers gs) (False, gs)
 
 -- 1. Find a User j in any Group (except the given User i's Group) for which a switch of Group assignments
 --    between User i and User j results in the largest positive delta in the objective function value.
--- 2. If there is at least one switch, make the switch.
+-- 2. If there is at least one switch, apply the switch.
 switchUserPair :: [Group] -> User -> (Bool, [Group])
 switchUserPair [] _ = (False, [])
 switchUserPair gs i =
     case f of
-        Just (_, _, j) -> (True,  makeSwitch gs i j)
-        Nothing        -> (False, gs)
+        Just s  -> (True,  applySwitch gs s)
+        Nothing -> (False, gs)
     where
         f :: Maybe Switch
         f = do
@@ -89,9 +89,9 @@ switchUserPair gs i =
             let xs'' = sortBy (\(d1, _, _) (d2, _, _) -> compare d2 d1) xs'
             safeHead xs''
 
-makeSwitch :: [Group] -> User -> User -> [Group]
-makeSwitch [] _ _ = []
-makeSwitch gs i j =
+applySwitch :: [Group] -> Switch -> [Group]
+applySwitch [] _         = []
+applySwitch gs (_, i, j) =
     case f of
         Just gs' -> gs'
         Nothing  -> gs
@@ -110,10 +110,7 @@ splitCourseIntoGroupsOfSize groupSize course = zipWith (\groupName c -> Group gr
 
 getUserGroup :: [Group] -> User -> Maybe Group
 getUserGroup [] _ = Nothing
-getUserGroup gs u =
-    case length gs' of
-        0 -> Nothing
-        _ -> Just $ head gs'
+getUserGroup gs u = safeHead gs'
     where gs' = dropWhile (\(Group _ xs) -> u `notElem` xs) gs
 
 getGroupsExcept :: Group -> [Group] -> [Group]
@@ -133,11 +130,11 @@ swapUsers gs i j = do
     gi <- getUserGroup gs i
     gj <- getUserGroup gs j
     guard $ gi /= gj
-    let (gi', gj') = swapUsersBetweenGroups (i, gi) (j, gj)
+    let (gi', gj') = swapUsersHelper (i, gi) (j, gj)
     return (gi, gi', gj, gj')
 
-swapUsersBetweenGroups :: (User, Group) -> (User, Group) -> (Group, Group)
-swapUsersBetweenGroups (i, Group ni gi) (j, Group nj gj) = (Group ni $ j : gi', Group nj $ i : gj')
+swapUsersHelper :: (User, Group) -> (User, Group) -> (Group, Group)
+swapUsersHelper (i, Group ni gi) (j, Group nj gj) = (Group ni $ j : gi', Group nj $ i : gj')
     where gi' = filter ((/=) i) gi
           gj' = filter ((/=) j) gj
 

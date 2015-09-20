@@ -24,13 +24,13 @@ import Lib
     , objectiveFunction
     , anySwitches
     , switchUserPair
-    , makeSwitch
+    , applySwitch
     , splitCourseIntoGroupsOfSize
     , getUserGroup
     , getGroupsExcept
     , objectiveFunctionDelta
     , swapUsers
-    , swapUsersBetweenGroups
+    , swapUsersHelper
     )
 
 import Data.List (nub, sort)
@@ -93,9 +93,9 @@ prop_switchUserPair (HomoGroupWrapper g1@(Group _ xs)) (HomoGroupWrapper g2@(Gro
           u1@(User _ ge1 ce1 co1) = head xs
           (User    _ ge2 ce2 co2) = head ys
 
-prop_makeSwitch :: GroupListWrapper -> Bool
-prop_makeSwitch (GroupListWrapper gs) =
-    case makeSwitch gs'  u1 u2 of
+prop_applySwitch :: GroupListWrapper -> Bool
+prop_applySwitch (GroupListWrapper gs) =
+    case applySwitch gs' (0, u1, u2) of
         (g1'@(Group _ xs'):g2'@(Group _ ys'):rest') -> and
             [ g1' == g1
             , g2' == g2
@@ -207,8 +207,8 @@ prop_swapUsersInSameGroup (GroupListWrapper gs) =
           u1           = head xs
           u2           = head $ tail xs
 
-prop_swapUsersBetweenGroups :: GroupWrapper -> GroupWrapper -> Property
-prop_swapUsersBetweenGroups (GroupWrapper g1@(Group _ xs)) (GroupWrapper g2@(Group _ ys)) =
+prop_swapUsersHelper :: GroupWrapper -> GroupWrapper -> Property
+prop_swapUsersHelper (GroupWrapper g1@(Group _ xs)) (GroupWrapper g2@(Group _ ys)) =
     constraints ==> and
         [ u1 `notElem` xs'
         , u1 `elem` ys'
@@ -218,7 +218,7 @@ prop_swapUsersBetweenGroups (GroupWrapper g1@(Group _ xs)) (GroupWrapper g2@(Gro
     where constraints = g1 /= g2 && u1 /= u2
           u1 = head xs
           u2 = head ys
-          (Group _ xs', Group _ ys') = swapUsersBetweenGroups (u1, g1) (u2, g2)
+          (Group _ xs', Group _ ys') = swapUsersHelper (u1, g1) (u2, g2)
 
 return []
 

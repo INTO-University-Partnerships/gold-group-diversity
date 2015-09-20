@@ -24,13 +24,13 @@ do {
 } while at least one switch is made.
 ```
 
-The *do-while* block is implemented by the functions [diversifyCourse](https://github.com/INTO-University-Partnerships/gold-group-diversity/blob/master/src/Lib.hs#L29) and [anySwitches](https://github.com/INTO-University-Partnerships/gold-group-diversity/blob/master/src/Lib.hs#L63). Steps *1.* and *2.* are together implemented by the function [switchUserPair](https://github.com/INTO-University-Partnerships/gold-group-diversity/blob/master/src/Lib.hs#L77).
+The *do-while* block is implemented by the functions [diversifyCourse](https://github.com/INTO-University-Partnerships/gold-group-diversity/blob/master/src/Lib.hs#L30) and [anySwitches](https://github.com/INTO-University-Partnerships/gold-group-diversity/blob/master/src/Lib.hs#L61). Steps *1.* and *2.* are together implemented by the function [switchUserPair](https://github.com/INTO-University-Partnerships/gold-group-diversity/blob/master/src/Lib.hs#L75).
 
 ### Quantifying diversity
 
-Diversity is quantified by the so-called *"objective function"* explained in the paper on pages 2 and 3. However, calculating the objective function for the *entire* set of groups *G* is not necessary. Rather, it is only necessary to consider deltas in the objective function value between two groups when evaluating whether to make a switch. Calculating objective function deltas is implemented by the function [objectiveFunctionDelta](https://github.com/INTO-University-Partnerships/gold-group-diversity/blob/master/src/Lib.hs#L120).
+Diversity is quantified by the so-called *"objective function"* explained in the paper on pages 2 and 3. However, calculating the objective function for the *entire* set of groups *G* is not necessary. Rather, it is only necessary to consider deltas in the objective function value between two groups when evaluating whether to make a switch. Calculating objective function deltas is implemented by the function [objectiveFunctionDelta](https://github.com/INTO-University-Partnerships/gold-group-diversity/blob/master/src/Lib.hs#L118).
 
-The *"objective function"*  is, appropriately enough, implemented by the function [objectiveFunction](https://github.com/INTO-University-Partnerships/gold-group-diversity/blob/master/src/Lib.hs#L48) (although the implementation is for one particular group, not all *G* groups). The implementation of the *"objective function"* does not take the square root of the sum of the differences between each pair of users. Instead, it simply sums the number of attributes that differ between pairs. As there are three attributes (gender, INTO centre and country of origin) the possible difference values between a pair of users is `[0, 1, 2, 3]`.
+The *"objective function"*  is, appropriately enough, implemented by the function [objectiveFunction](https://github.com/INTO-University-Partnerships/gold-group-diversity/blob/master/src/Lib.hs#L49) (although the implementation is for one particular group, not all *G* groups). The implementation of the *"objective function"* does not take the square root of the sum of the differences between each pair of users. Instead, it simply sums the number of attributes that differ between pairs. As there are three attributes (gender, INTO centre and country of origin) the possible difference values between a pair of users is `[0, 1, 2, 3]`.
 
 ## Build
 

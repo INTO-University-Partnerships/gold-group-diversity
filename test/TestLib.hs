@@ -95,7 +95,7 @@ prop_switchPairOfElements (HomoGroupWrapper g1@(Group _ xs)) (HomoGroupWrapper g
 
 prop_applySwitch :: GroupListWrapper -> Bool
 prop_applySwitch (GroupListWrapper gs) =
-    case applySwitch gs' (Switch 0 u1 u2) of
+    case applySwitch gs' (Switch u1 u2) of
         (g1'@(Group _ xs'):g2'@(Group _ ys'):rest') -> and
             [ g1' == g1
             , g2' == g2
@@ -166,11 +166,11 @@ prop_objectiveFunctionDeltaReturnsNothingIfInSameGroup (GroupListWrapper gs) =
           u1           = head xs
           u2           = head $ drop 1 xs
 
-prop_objectiveFunctionDeltaReturnsUsersInTriple :: GroupListWrapper -> Bool
-prop_objectiveFunctionDeltaReturnsUsersInTriple (GroupListWrapper gs) =
+prop_objectiveFunctionDeltaReturnsSwitch :: GroupListWrapper -> Bool
+prop_objectiveFunctionDeltaReturnsSwitch (GroupListWrapper gs) =
     case objectiveFunctionDelta gs u1 u2 of
-        Just (Switch _ u1' u2') -> u1' == u1 && u2' == u2
-        Nothing                 -> False
+        Just (_, Switch u1' u2') -> u1' == u1 && u2' == u2
+        Nothing                  -> False
     where gs'          = nub gs
           (Group _ xs) = head gs'
           (Group _ ys) = head $ tail gs'

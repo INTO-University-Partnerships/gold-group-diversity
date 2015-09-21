@@ -77,20 +77,20 @@ switchPairOfElements :: forall a. Element a => [Group a] -> a -> (Bool, [Group a
 switchPairOfElements [] _ = (False, [])
 switchPairOfElements gs i =
     case f of
-        Just s  -> (True,  applySwitch gs s)
-        Nothing -> (False, gs)
+        Just (_, s) -> (True,  applySwitch gs s)
+        Nothing     -> (False, gs)
     where
-        f :: Maybe (Switch a)
+        f :: Maybe (Int, Switch a)
         f = do
             gi <- getElementGroup gs i
             xs <- mapM (objectiveFunctionDelta gs i) $ groupsToElements $ getGroupsExcept gi gs
-            let xs'  = filter (\(Switch d  _  _) -> d > 0) xs
-            let xs'' = sortBy (\(Switch d1 _  _) (Switch d2 _ _) -> compare d2 d1) xs'
+            let xs'  = filter (\(d, _) -> d > 0) xs
+            let xs'' = sortBy (\(d1, _) (d2, _) -> compare d2 d1) xs'
             safeHead xs''
 
 applySwitch :: forall a. Element a => [Group a] -> Switch a -> [Group a]
 applySwitch [] _ = []
-applySwitch gs (Switch _ i j) =
+applySwitch gs (Switch i j) =
     case f of
         Just gs' -> gs'
         Nothing  -> gs
@@ -117,13 +117,13 @@ getGroupsExcept :: Element a => Group a -> [Group a] -> [Group a]
 getGroupsExcept _ [] = []
 getGroupsExcept g gs = filter ((/=) g) gs
 
-objectiveFunctionDelta :: Element a => [Group a] -> a -> a -> Maybe (Switch a)
+objectiveFunctionDelta :: Element a => [Group a] -> a -> a -> Maybe (Int, Switch a)
 objectiveFunctionDelta [] _ _ = Nothing
 objectiveFunctionDelta gs i j = do
     (gi, gi', gj, gj') <- swapElements gs i j
     let old = objectiveFunction gi  + objectiveFunction gj
     let new = objectiveFunction gi' + objectiveFunction gj'
-    return $ Switch (new - old) i j
+    return (new - old, Switch i j)
 
 swapElements :: Element a => [Group a] -> a -> a -> Maybe (Group a, Group a, Group a, Group a)
 swapElements gs i j = do

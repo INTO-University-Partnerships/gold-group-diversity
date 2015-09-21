@@ -33,8 +33,7 @@ type Country    = String
 data Gender     = Female | Male deriving (Eq, Ord, Show)
 data User       = User StudentID Gender Centre Country deriving Show
 data Group a    = Group GroupName [a] deriving Show
-type ObjFnDelta = Int
-data Switch a   = Switch ObjFnDelta a a
+data Switch a   = Switch a a
 
 data UserWithGroup = UserWithGroup User (Group User) deriving Show
 data DiversifyOpts = DiversifyOpts Int deriving Show

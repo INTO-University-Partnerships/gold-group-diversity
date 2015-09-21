@@ -158,7 +158,7 @@ prop_getGroupsExcept (GroupListWrapper gs) = getGroupsExcept (head gs') gs' == t
 
 prop_objectiveFunctionDeltaReturnsNothingIfInSameGroup :: GroupListWrapper -> Property
 prop_objectiveFunctionDeltaReturnsNothingIfInSameGroup (GroupListWrapper gs) =
-    constraints ==> case objectiveFunctionDelta gs u1 u2 of
+    constraints ==> case objectiveFunctionDelta gs (Switch u1 u2) of
         Nothing -> True
         _       -> False
     where constraints  = length xs > 1
@@ -168,7 +168,7 @@ prop_objectiveFunctionDeltaReturnsNothingIfInSameGroup (GroupListWrapper gs) =
 
 prop_objectiveFunctionDeltaReturnsSwitch :: GroupListWrapper -> Bool
 prop_objectiveFunctionDeltaReturnsSwitch (GroupListWrapper gs) =
-    case objectiveFunctionDelta gs u1 u2 of
+    case objectiveFunctionDelta gs (Switch u1 u2) of
         Just (_, Switch u1' u2') -> u1' == u1 && u2' == u2
         Nothing                  -> False
     where gs'          = nub gs
@@ -179,7 +179,7 @@ prop_objectiveFunctionDeltaReturnsSwitch (GroupListWrapper gs) =
 
 prop_swapElements :: GroupListWrapper -> Property
 prop_swapElements (GroupListWrapper gs) =
-    constraints ==> case swapElements gs' u1 u2 of
+    constraints ==> case swapElements gs' (Switch u1 u2) of
         Just (gi, gi'@(Group _ xs'), gj, gj'@(Group _ ys')) -> and
             [ gi  == g1
             , gi' == g1
@@ -200,7 +200,7 @@ prop_swapElements (GroupListWrapper gs) =
 
 prop_swapElementsInSameGroup :: GroupListWrapper -> Property
 prop_swapElementsInSameGroup (GroupListWrapper gs) =
-    constraints ==> case swapElements gs' u1 u2 of
+    constraints ==> case swapElements gs' (Switch u1 u2) of
         Just _  -> False
         Nothing -> True
     where constraints  = u1 /= u2

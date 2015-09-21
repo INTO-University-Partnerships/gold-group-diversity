@@ -83,21 +83,21 @@ switchPairOfElements gs i =
         f :: Maybe (Int, Switch a)
         f = do
             gi <- getElementGroup gs i
-            xs <- mapM (objectiveFunctionDelta gs i) $ groupsToElements $ getGroupsExcept gi gs
+            xs <- mapM (objectiveFunctionDelta gs) $ map (Switch i) $ groupsToElements $ getGroupsExcept gi gs
             let xs'  = filter (\(d, _) -> d > 0) xs
             let xs'' = sortBy (\(d1, _) (d2, _) -> compare d2 d1) xs'
             safeHead xs''
 
 applySwitch :: forall a. Element a => [Group a] -> Switch a -> [Group a]
 applySwitch [] _ = []
-applySwitch gs (Switch i j) =
+applySwitch gs s =
     case f of
         Just gs' -> gs'
         Nothing  -> gs
     where
         f :: Maybe [Group a]
         f = do
-            (gi, gi', gj, gj') <- swapElements gs i j
+            (gi, gi', gj, gj') <- swapElements gs s
             return $ gi' : gj' : getGroupsExcept gj (getGroupsExcept gi gs)
 
 distributeElementsIntoGroups :: Int -> [a] -> [Group a]
@@ -117,16 +117,16 @@ getGroupsExcept :: Element a => Group a -> [Group a] -> [Group a]
 getGroupsExcept _ [] = []
 getGroupsExcept g gs = filter ((/=) g) gs
 
-objectiveFunctionDelta :: Element a => [Group a] -> a -> a -> Maybe (Int, Switch a)
-objectiveFunctionDelta [] _ _ = Nothing
-objectiveFunctionDelta gs i j = do
-    (gi, gi', gj, gj') <- swapElements gs i j
+objectiveFunctionDelta :: Element a => [Group a] -> Switch a -> Maybe (Int, Switch a)
+objectiveFunctionDelta [] _ = Nothing
+objectiveFunctionDelta gs s = do
+    (gi, gi', gj, gj') <- swapElements gs s
     let old = objectiveFunction gi  + objectiveFunction gj
     let new = objectiveFunction gi' + objectiveFunction gj'
-    return (new - old, Switch i j)
+    return (new - old, s)
 
-swapElements :: Element a => [Group a] -> a -> a -> Maybe (Group a, Group a, Group a, Group a)
-swapElements gs i j = do
+swapElements :: Element a => [Group a] -> Switch a -> Maybe (Group a, Group a, Group a, Group a)
+swapElements gs (Switch i j) = do
     gi <- getElementGroup gs i
     gj <- getElementGroup gs j
     guard $ gi /= gj

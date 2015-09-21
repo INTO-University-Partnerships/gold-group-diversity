@@ -12,7 +12,7 @@ A command line programme to maximize the diversity (in terms of gender, INTO cen
 
 ### Algorithm
 
-The algorithm used to solve the so-called *"maximally diverse grouping problem"* (MDGP) is the *"LCW"* algorithm presented in [this paper](http://www.uv.es/rmarti/paper/docs/mdp7.pdf) on page 5. Should that URL go down, the paper can also be found in the `doc` directory. In pseudo-code, this reads:
+The algorithm used to solve the so-called *"maximally diverse grouping problem"* (MDGP) is the *"LCW"* algorithm presented in [this paper](http://www.uv.es/rmarti/paper/docs/mdp7.pdf) on page 5. Should that URL go down, the paper can also be found in the `doc` directory. In pseudo-code, the *"LCW"* algorithm reads:
 
 ```
 do {

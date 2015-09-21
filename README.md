@@ -42,7 +42,7 @@ Types that can be diversified should be made instances of [Element](https://gith
 
 ## Example
 
-    $ more data/homogeneous.csv | build/diversify --size 8
+    $ more data/short.csv | build/diversify --size 8
     "30","F","CIT","FR","Group A"
     "07","F","NCL","GB","Group A"
     "24","F","CIT","GB","Group A"

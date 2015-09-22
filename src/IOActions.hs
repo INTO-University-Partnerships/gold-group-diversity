@@ -3,7 +3,7 @@ module IOActions
     ) where
 
 import Types (User, DiversifyOpts(..))
-import Parse (collectCSVUserData, toUserWithGroup)
+import Parse (collectCSVRecords, toUserWithGroup)
 import Lib (diversifyElements)
 
 import Data.Csv (encodeWith, defaultEncodeOptions, EncodeOptions(..), Quoting(..), HasHeader(..))
@@ -28,4 +28,4 @@ runDiversification (DiversifyOpts groupSize) = do
         h csvData = do
             let lazyByteString = BL.fromStrict . encodeUtf8 . T.pack $ csvData
             let csvUserData    = CS.decode NoHeader lazyByteString
-            collectCSVUserData csvUserData
+            collectCSVRecords csvUserData

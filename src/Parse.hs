@@ -1,5 +1,5 @@
 module Parse
-    ( collectCSVUserData
+    ( collectCSVRecords
     , toUserWithGroup
     ) where
 
@@ -13,12 +13,12 @@ import Data.Maybe (fromJust)
 import qualified Data.Csv.Streaming as CS
 import qualified Data.Vector as V
 
-collectCSVUserData :: CS.Records User -> Either String (V.Vector User)
-collectCSVUserData rs = if length s == 0 then Right v' else Left s
+collectCSVRecords :: CS.Records a -> Either String (V.Vector a)
+collectCSVRecords rs = if length s == 0 then Right v' else Left s
     where
         (v', xs) = runWriter $ f rs 1 V.empty
         s = concat $ intersperse "\r\n" xs
-        f :: CS.Records User -> Int -> V.Vector User -> Writer [String] (V.Vector User)
+        f :: CS.Records a -> Int -> V.Vector a -> Writer [String] (V.Vector a)
         f (CS.Nil _ _)             _   v = writer (v, [])
         f (CS.Cons (Right r) more) row v = f more (row + 1) $ V.snoc v r
         f (CS.Cons (Left e)  more) row v = do

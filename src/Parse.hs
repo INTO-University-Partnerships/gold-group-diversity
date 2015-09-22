@@ -1,34 +1,29 @@
 module Parse
     ( collectCSVUserData
-    , collectCSVUserErrors
     , toUserWithGroup
     ) where
 
 import Types (User, UserWithGroup(..), Group)
 import Lib (groupsToElements, getElementGroup)
 
-import Data.Csv.Streaming (Records(..))
+import Control.Monad.Writer (Writer, writer, runWriter, tell)
+import Data.List (intersperse)
 import Data.Maybe (fromJust)
 
 import qualified Data.Csv.Streaming as CS
 import qualified Data.Vector as V
 
-collectCSVUserData :: V.Vector User -> Records User -> V.Vector User
-collectCSVUserData v (Nil _ _) = v
-collectCSVUserData v (Cons r moreRecords) =
-    case r of
-        Right i -> collectCSVUserData (V.snoc v i) moreRecords
-        Left  _ -> collectCSVUserData v moreRecords
-
-collectCSVUserErrors :: Int -> V.Vector String -> CS.Records User -> Either String Bool
-collectCSVUserErrors _ v (CS.Nil _ _)
-    | l == 0    = Right True
-    | otherwise = Left $ V.foldl1 (\acc x -> acc ++ "\r\n" ++ x) v
-    where l     = V.length v
-collectCSVUserErrors row v (CS.Cons r moreRecords) =
-    case r of
-        Right _ -> collectCSVUserErrors (row + 1) v moreRecords
-        Left  e -> collectCSVUserErrors (row + 1) (V.snoc v $ "Row " ++ show row ++ " has error \"" ++ e ++ "\"") moreRecords
+collectCSVUserData :: CS.Records User -> Either String (V.Vector User)
+collectCSVUserData rs = if length s == 0 then Right v' else Left s
+    where
+        (v', xs) = runWriter $ f rs 1 V.empty
+        s = concat $ intersperse "\r\n" xs
+        f :: CS.Records User -> Int -> V.Vector User -> Writer [String] (V.Vector User)
+        f (CS.Nil _ _)             _   v = writer (v, [])
+        f (CS.Cons (Right r) more) row v = f more (row + 1) $ V.snoc v r
+        f (CS.Cons (Left e)  more) row v = do
+            tell ["Row " ++ show row ++ " has error \"" ++ e ++ "\""]
+            f more (row + 1) v
 
 toUserWithGroup :: [Group User] -> [UserWithGroup]
 toUserWithGroup gs = map (\u -> UserWithGroup u $ fromJust $ getElementGroup gs u) users

@@ -34,7 +34,7 @@ diversifyElements groupSize es = f gs'
         f :: [Group a] -> [Group a]
         f xs = case anySwitches xs of
             (True,  xs') -> f xs'
-            (False, xs') -> sort xs' ++ last'
+            (False, xs') -> map (\(Group n ys) -> Group n $ sort ys) $ sort xs' ++ last'
         gs       = distributeElementsIntoGroups groupSize es
         leftOver = getGroupSize (last gs) /= getGroupSize (head gs)
         gs'      = if leftOver then init gs   else gs

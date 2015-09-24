@@ -40,7 +40,9 @@ Types that can be diversified should be made instances of [Element](https://gith
 
     stack test --pedantic
 
-## Example
+## Examples
+
+To diversify into groups of size 8:
 
     $ more data/short.csv | build/diversify --size 8
     "07","F","NCL","GB","Group A"
@@ -108,3 +110,11 @@ Types that can be diversified should be made instances of [Element](https://gith
     "63","M","CIT","FR","Group H"
     "64","M","CIT","FR","Group H"
     "65","F","XXX","YY","Group I"
+
+To display the objective function values of each diversified group:
+
+    $ more data/short.csv | build/diversify --values
+    Group A = 298
+    Group B = 298
+    Group C = 298
+    Group D = 12

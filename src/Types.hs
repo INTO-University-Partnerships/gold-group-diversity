@@ -36,7 +36,7 @@ data Group a    = Group GroupName [a] deriving Show
 data Switch a   = Switch a a
 
 data UserWithGroup = UserWithGroup User (Group User) deriving Show
-data DiversifyOpts = DiversifyOpts Int deriving Show
+data DiversifyOpts = DiversifyOpts Int Bool deriving Show
 
 class Ord a => Element a where
     distance :: a -> a -> Int

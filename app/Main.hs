@@ -9,6 +9,7 @@ import Options.Applicative
     , readerError
     , execParser
     , option
+    , switch
     , str
     , info
     , helper
@@ -30,7 +31,8 @@ optParseGroupSize f
 
 diversifyOpts :: Parser DiversifyOpts
 diversifyOpts = DiversifyOpts
-                <$> option (str >>= optParseGroupSize) (long "size" <> short 's' <> value 20 <> help "Group size (20 by default)")
+                <$> option (str >>= optParseGroupSize) (long "size"   <> short 's' <> help "Group size (20 by default)" <> value 20)
+                <*> switch                             (long "values" <> short 'v' <> help "Whether to output objective function values")
 
 main :: IO ()
 main = execParser opts >>= runDiversification

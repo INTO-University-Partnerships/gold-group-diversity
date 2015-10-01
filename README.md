@@ -5,7 +5,7 @@ A command line programme to maximize the diversity (in terms of gender, INTO cen
 ## Technology
 
 * [Stack](https://github.com/commercialhaskell/stack) is required to build the programme
-* It is currently built against [LTS Haskell 3.6](https://www.stackage.org/lts-3.6)
+* It is currently built against [LTS Haskell 3.7](https://www.stackage.org/lts-3.7)
 * [In-depth guide](https://github.com/commercialhaskell/stack/blob/master/doc/GUIDE.md) to Stack
 
 ## Theory

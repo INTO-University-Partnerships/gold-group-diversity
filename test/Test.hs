@@ -2,7 +2,7 @@ import TestLib
 
 main :: IO Bool
 main = do
-    b <- sequence
-        [ testLib
-        ]
-    return $ and b
+  b <- sequence
+    [ testLib
+    ]
+  return $ and b
